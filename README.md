@@ -11,9 +11,13 @@ Temporary file and text sharing: upload files (up to ~120 MB), share text with s
 - **QR Code Generation**: Quick sharing via QR codes
 - **Responsive Design**: Mobile-friendly interface built with Tailwind CSS
 
-**Stack:** React (Vite) + Node.js (Express) + Redis.
+### Screenshots
+
+<img src="screens/screen-dark-1.png" width="200" alt="DoShare dark theme 1" /> <img src="screens/screen-dark-2.png" width="200" alt="DoShare dark theme 2" /> <img src="screens/screen-light-1.png" width="200" alt="DoShare light theme 1" /> <img src="screens/screen-light-2.png" width="200" alt="DoShare light theme 2" />
 
 ---
+
+**Stack:** React (Vite) + Node.js (Express) + Redis.
 
 ## 🚀 Local development
 

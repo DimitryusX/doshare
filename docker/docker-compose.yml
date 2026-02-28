@@ -1,0 +1,83 @@
+services:
+  app:
+    build:
+      context: ${PROJECT_PATH}/server
+      dockerfile: ${SERVER_DOCKERFILE:-../docker/Dockerfile}
+      args:
+        NODE_VERSION: "${NODE_VERSION:-20}"
+    container_name: doshare-app
+    restart: unless-stopped
+    tty: true
+    environment:
+      SERVER_HOST: ${SERVER_HOST}
+      SERVER_PORT: ${SERVER_PORT}
+      UPLOAD_LIMIT: ${UPLOAD_LIMIT}
+      UPLOAD_FOLDER: ${UPLOAD_FOLDER}
+      CLIENT_FOLDER: ${CLIENT_FOLDER}
+      REDIS_HOST: redis
+      REDIS_PORT: ${REDIS_PORT}
+      REDIS_DATABASE: ${REDIS_DATABASE}
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      SENTRY_TRACES_SAMPLE_RATE: ${SENTRY_TRACES_SAMPLE_RATE:-}
+      SENTRY_PROFILES_SAMPLE_RATE: ${SENTRY_PROFILES_SAMPLE_RATE:-}
+    volumes:
+      - ${UPLOADS_PATH}:${UPLOAD_FOLDER}
+      - ${PROJECT_PATH}/client/build:${CLIENT_FOLDER}:ro
+    networks:
+      - internal
+    depends_on:
+      - redis
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  webserver:
+    image: nginx:alpine
+    container_name: doshare-webserver
+    restart: unless-stopped
+    tty: true
+    depends_on:
+      - app
+    volumes:
+      - ${PROJECT_PATH}/docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ${PROJECT_PATH}/docker/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ${PROJECT_PATH}/logs/nginx:/var/log/nginx
+      - ${UPLOADS_PATH}:${UPLOAD_FOLDER}:ro
+    expose:
+      - "80"
+    networks:
+      - internal
+      - proxy
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  redis:
+    image: redis:7-alpine
+    container_name: doshare-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  internal:
+    driver: bridge
+  proxy:
+    external: true
+    name: proxy
+
+volumes:
+  redis-data:

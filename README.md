@@ -1,5 +1,7 @@
 # DoShare
 
+**Live:** [doshare.io](https://doshare.io)
+
 Temporary file and text sharing: upload files (up to ~120 MB), share text with syntax highlighting, configurable expiry (minutes to hours), optional password protection, QR codes for quick access.
 
 - **File Upload**: Upload multiple files with a combined limit of 120MB
